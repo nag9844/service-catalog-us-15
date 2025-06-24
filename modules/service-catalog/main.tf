@@ -140,7 +140,7 @@ locals {
       WebServerURL = {
         Description = "URL to access the Hello World page"
         Value = {
-          "Fn::Sub" = "http://${WebServerInstance.PublicIp}"
+          "Fn::Join" = ["", ["http://", { "Fn::GetAtt" = ["WebServerInstance", "PublicIp"] }]]
         }
       }
       InstanceId = {
