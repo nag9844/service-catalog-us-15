@@ -1,0 +1,27 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: Service Catalog product to launch EC2 with Hello World
+
+Parameters:
+  KeyName:
+    Type: AWS::EC2::KeyPair::KeyName
+    Description: SSH key for the EC2 instance
+
+Resources:
+  HelloWorldInstance:
+    Type: AWS::EC2::Instance
+    Properties:
+      InstanceType: t2.micro
+      ImageId: ami-0c55b159cbfafe1f0  # Update this AMI ID for your region if needed
+      KeyName:
+        Ref: KeyName
+      UserData:
+        Fn::Base64: |
+          #!/bin/bash
+          yum update -y
+          yum install -y httpd
+          echo "Hello World from Service Catalog" > /var/www/html/index.html
+          systemctl start httpd
+          systemctl enable httpd
+      Tags:
+        - Key: Name
+          Value: HelloWorldInstance
