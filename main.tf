@@ -29,6 +29,14 @@ resource "aws_s3_bucket" "cf_templates" {
   force_destroy = true
 }
 
+resource "aws_s3_bucket_public_access_block" "cf_templates" {
+  bucket                  = aws_s3_bucket.cf_templates.id
+  block_public_acls       = false
+  block_public_policy     = false
+  ignore_public_acls      = false
+  restrict_public_buckets = false
+}
+
 resource "aws_s3_object" "ec2_product_template" {
   bucket        = aws_s3_bucket.cf_templates.id
   key           = "ec2-product.yaml"
@@ -37,26 +45,26 @@ resource "aws_s3_object" "ec2_product_template" {
   content_type  = "text/yaml"
 }
 
-resource "aws_s3_bucket_policy" "cf_templates_policy" {
+resource "aws_s3_bucket_policy" "allow_sc_launch_role_read" {
   bucket = aws_s3_bucket.cf_templates.id
 
   policy = jsonencode({
     Version = "2012-10-17",
     Statement = [
       {
-        Effect = "Allow",
+        Sid       = "AllowReadAccessForServiceCatalogLaunchRole",
+        Effect    = "Allow",
         Principal = {
           AWS = aws_iam_role.launch_role.arn
         },
-        Action = [
+        Action    = [
           "s3:GetObject"
         ],
-        Resource = "${aws_s3_bucket.cf_templates.arn}/*"
+        Resource  = "${aws_s3_bucket.cf_templates.arn}/*"
       }
     ]
   })
 }
-
 
 # IAM role for Service Catalog to launch EC2
 resource "aws_iam_role" "launch_role" {
@@ -76,6 +84,11 @@ resource "aws_iam_role" "launch_role" {
 resource "aws_iam_role_policy_attachment" "ec2_full_access" {
   role       = aws_iam_role.launch_role.name
   policy_arn = "arn:aws:iam::aws:policy/AmazonEC2FullAccess"
+}
+
+resource "aws_iam_role_policy_attachment" "cloudformation_full_access" {
+  role       = aws_iam_role.launch_role.name
+  policy_arn = "arn:aws:iam::aws:policy/AWSCloudFormationFullAccess"
 }
 
 # Service Catalog portfolio
@@ -156,11 +169,6 @@ resource "aws_iam_policy" "sc_end_user_policy" {
 resource "aws_iam_role_policy_attachment" "sc_end_user_attach" {
   role       = aws_iam_role.sc_end_user_role.name
   policy_arn = aws_iam_policy.sc_end_user_policy.arn
-}
-
-resource "aws_iam_role_policy_attachment" "cloudformation_full_access" {
-  role       = aws_iam_role.launch_role.name
-  policy_arn = "arn:aws:iam::aws:policy/AWSCloudFormationFullAccess"
 }
 
 # Data source to get account ID
