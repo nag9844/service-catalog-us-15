@@ -37,6 +37,27 @@ resource "aws_s3_object" "ec2_product_template" {
   content_type  = "text/yaml"
 }
 
+resource "aws_s3_bucket_policy" "cf_templates_policy" {
+  bucket = aws_s3_bucket.cf_templates.id
+
+  policy = jsonencode({
+    Version = "2012-10-17",
+    Statement = [
+      {
+        Effect = "Allow",
+        Principal = {
+          AWS = aws_iam_role.launch_role.arn
+        },
+        Action = [
+          "s3:GetObject"
+        ],
+        Resource = "${aws_s3_bucket.cf_templates.arn}/*"
+      }
+    ]
+  })
+}
+
+
 # IAM role for Service Catalog to launch EC2
 resource "aws_iam_role" "launch_role" {
   name = "sc-ec2-launch-role"
