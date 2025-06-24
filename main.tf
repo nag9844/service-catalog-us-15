@@ -45,27 +45,6 @@ resource "aws_s3_object" "ec2_product_template" {
   content_type  = "text/yaml"
 }
 
-resource "aws_s3_bucket_policy" "allow_sc_launch_role_read" {
-  bucket = aws_s3_bucket.cf_templates.id
-
-  policy = jsonencode({
-    Version = "2012-10-17",
-    Statement = [
-      {
-        Sid       = "AllowReadAccessForServiceCatalogLaunchRole",
-        Effect    = "Allow",
-        Principal = {
-          AWS = aws_iam_role.launch_role.arn
-        },
-        Action    = [
-          "s3:GetObject"
-        ],
-        Resource  = "${aws_s3_bucket.cf_templates.arn}/*"
-      }
-    ]
-  })
-}
-
 # IAM role for Service Catalog to launch EC2
 resource "aws_iam_role" "launch_role" {
   name = "sc-ec2-launch-role"
@@ -89,6 +68,26 @@ resource "aws_iam_role_policy_attachment" "ec2_full_access" {
 resource "aws_iam_role_policy_attachment" "cloudformation_full_access" {
   role       = aws_iam_role.launch_role.name
   policy_arn = "arn:aws:iam::aws:policy/AWSCloudFormationFullAccess"
+}
+
+resource "aws_s3_bucket_policy" "allow_sc_launch_role_read" {
+  bucket     = aws_s3_bucket.cf_templates.id
+  depends_on = [aws_iam_role.launch_role]
+
+  policy = jsonencode({
+    Version = "2012-10-17",
+    Statement = [
+      {
+        Sid       = "AllowReadAccessForServiceCatalogLaunchRole",
+        Effect    = "Allow",
+        Principal = {
+          AWS = aws_iam_role.launch_role.arn
+        },
+        Action    = ["s3:GetObject"],
+        Resource  = "${aws_s3_bucket.cf_templates.arn}/*"
+      }
+    ]
+  })
 }
 
 # Service Catalog portfolio
@@ -173,3 +172,7 @@ resource "aws_iam_role_policy_attachment" "sc_end_user_attach" {
 
 # Data source to get account ID
 data "aws_caller_identity" "current" {}
+
+output "cloudformation_template_url" {
+  value = "https://${aws_s3_bucket.cf_templates.bucket}.s3.amazonaws.com/${aws_s3_object.ec2_product_template.key}"
+}
