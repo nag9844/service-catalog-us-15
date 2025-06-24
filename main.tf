@@ -1,3 +1,16 @@
+terraform {
+  required_providers {
+    aws = {
+      source  = "hashicorp/aws"
+      version = "~> 5.0"
+    }
+    awscc = {
+      source  = "hashicorp/awscc"
+      version = "~> 0.53"
+    }
+  }
+}
+
 provider "aws" {
   region = var.region
 }
@@ -34,10 +47,12 @@ resource "aws_s3_bucket" "cf_templates" {
 }
 
 # Upload the CloudFormation template to the bucket
-resource "aws_s3_bucket_object" "ec2_product_template" {
+resource "aws_s3_object" "ec2_product_template" {
   bucket = aws_s3_bucket.cf_templates.id
   key    = "ec2-product.yaml"
   source = "${path.module}/ec2-product.yaml"
+  etag   = filemd5("${path.module}/ec2-product.yaml")
+  content_type = "text/yaml"
 }
 
 # Create Service Catalog Portfolio
@@ -58,7 +73,7 @@ resource "aws_servicecatalog_product" "ec2_product" {
     name         = "v1"
     description  = "Initial version"
     type         = "CLOUD_FORMATION_TEMPLATE"
-    template_url = "https://${aws_s3_bucket.cf_templates.bucket}.s3.amazonaws.com/${aws_s3_bucket_object.ec2_product_template.key}"
+    template_url = "https://${aws_s3_bucket.cf_templates.bucket}.s3.amazonaws.com/${aws_s3_object.ec2_product_template.key}"
   }
 
   tags = {
@@ -67,14 +82,14 @@ resource "aws_servicecatalog_product" "ec2_product" {
 }
 
 # Associate the product with the portfolio
-resource "aws_servicecatalog_portfolio_product_association" "association" {
+resource "awscc_servicecatalog_portfolio_product_association" "association" {
   portfolio_id = aws_servicecatalog_portfolio.sc_portfolio.id
   product_id   = aws_servicecatalog_product.ec2_product.id
 }
 
 # Define a launch constraint linking the product to the IAM role
-resource "aws_servicecatalog_launch_constraint" "launch_constraint" {
+resource "awscc_servicecatalog_launch_constraint" "launch_constraint" {
   portfolio_id = aws_servicecatalog_portfolio.sc_portfolio.id
   product_id   = aws_servicecatalog_product.ec2_product.id
-  role_arn     = aws_iam_role.launch_role.arn
+  parameters   = jsonencode({ "RoleArn" = aws_iam_role.launch_role.arn })
 }
