@@ -80,7 +80,7 @@ resource "aws_servicecatalog_product" "ec2_product" {
 }
 
 # Associate the product with the portfolio
-resource "aws_servicecatalog_portfolio_product_association" "association" {
+resource "aws_servicecatalog_product_portfolio_association" "association" {
   portfolio_id = aws_servicecatalog_portfolio.sc_portfolio.id
   product_id   = aws_servicecatalog_product.ec2_product.id
 }
@@ -91,3 +91,4 @@ resource "aws_servicecatalog_launch_constraint" "launch_constraint" {
   product_id   = aws_servicecatalog_product.ec2_product.id
   role_arn     = aws_iam_role.launch_role.arn
 }
+
