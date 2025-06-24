@@ -4,11 +4,9 @@ terraform {
       source  = "hashicorp/aws"
       version = "~> 4.67"
     }
-    awscc = {
-      source  = "hashicorp/awscc"
-      version = "~> 0.53"
-    }
   }
+
+  required_version = ">= 1.3"
 }
 
 provider "aws" {
