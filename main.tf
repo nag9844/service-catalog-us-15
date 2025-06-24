@@ -86,9 +86,12 @@ resource "aws_servicecatalog_product_portfolio_association" "association" {
 }
 
 # Define a launch constraint linking the product to the IAM role
-resource "aws_servicecatalog_launch_constraint" "launch_constraint" {
+resource "aws_servicecatalog_constraint" "launch_constraint" {
   portfolio_id = aws_servicecatalog_portfolio.sc_portfolio.id
   product_id   = aws_servicecatalog_product.ec2_product.id
-  role_arn     = aws_iam_role.launch_role.arn
+  type         = "LAUNCH"
+  parameters   = jsonencode({
+    RoleArn = aws_iam_role.launch_role.arn
+  })
 }
 
