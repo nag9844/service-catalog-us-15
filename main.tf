@@ -15,9 +15,9 @@ provider "aws" {
   region = var.region
 }
 
-variable "region" {
-  default = "ap-south-1"
-}
+# variable "region" {
+#   default = "ap-south-1"
+# }
 
 resource "random_id" "rand" {
   byte_length = 4
