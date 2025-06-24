@@ -137,5 +137,10 @@ resource "aws_iam_role_policy_attachment" "sc_end_user_attach" {
   policy_arn = aws_iam_policy.sc_end_user_policy.arn
 }
 
+resource "aws_iam_role_policy_attachment" "cloudformation_full_access" {
+  role       = aws_iam_role.launch_role.name
+  policy_arn = "arn:aws:iam::aws:policy/AWSCloudFormationFullAccess"
+}
+
 # Data source to get account ID
 data "aws_caller_identity" "current" {}
