@@ -78,13 +78,16 @@ resource "aws_s3_bucket_policy" "allow_sc_launch_role_read" {
     Version = "2012-10-17",
     Statement = [
       {
-        Sid       = "AllowReadAccessForServiceCatalogLaunchRole",
-        Effect    = "Allow",
-        Principal = {
-          AWS = aws_iam_role.launch_role.arn
-        },
-        Action    = ["s3:GetObject"],
-        Resource  = "${aws_s3_bucket.cf_templates.arn}/*"
+        Sid      = "AllowCloudFormationAndSCAccess",
+        Effect   = "Allow",
+        Principal = "*",
+        Action   = ["s3:GetObject"],
+        Resource = "${aws_s3_bucket.cf_templates.arn}/*",
+        Condition = {
+          StringEquals = {
+            "aws:PrincipalArn" = aws_iam_role.launch_role.arn
+          }
+        }
       }
     ]
   })
