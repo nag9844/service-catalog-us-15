@@ -1,27 +1,28 @@
 AWSTemplateFormatVersion: '2010-09-09'
-Description: Service Catalog product to launch EC2 with Hello World
-
-Parameters:
-  KeyName:
-    Type: AWS::EC2::KeyPair::KeyName
-    Description: SSH key for the EC2 instance
+Description: Launch a web server EC2 instance
 
 Resources:
-  HelloWorldInstance:
+  WebAppInstance:
     Type: AWS::EC2::Instance
     Properties:
       InstanceType: t2.micro
-      ImageId: ami-0b09627181c8d5778  # Update this AMI ID for your region if needed
-      KeyName:
-        Ref: KeyName
+      ImageId: ami-0b09627181c8d5778
+      SecurityGroups:
+        - !Ref WebAppSG
       UserData:
         Fn::Base64: |
           #!/bin/bash
-          yum update -y
           yum install -y httpd
-          echo "Hello World from Service Catalog" > /var/www/html/index.html
           systemctl start httpd
           systemctl enable httpd
-      Tags:
-        - Key: Name
-          Value: HelloWorldInstance
+          echo "Hello from Service Catalog WebApp" > /var/www/html/index.html
+
+  WebAppSG:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: Allow HTTP
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: 80
+          ToPort: 80
+          CidrIp: 0.0.0.0/0
