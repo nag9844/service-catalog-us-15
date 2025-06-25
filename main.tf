@@ -134,5 +134,5 @@ resource "aws_servicecatalog_constraint" "web_app_launch_constraint" {
 ## 7. Grant Access to Users/Groups
 resource "aws_servicecatalog_principal_portfolio_association" "developer_access" {
   portfolio_id  = aws_servicecatalog_portfolio.web_app_portfolio.id
-  principal_arn = "arn:aws:iam::994466158061:user/Shaik"
+  principal_arn = "arn:aws:iam::199570228070:user/nagaraj"
 }
