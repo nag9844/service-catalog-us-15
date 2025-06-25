@@ -15,7 +15,7 @@ Resources:
           yum install -y httpd
           systemctl start httpd
           systemctl enable httpd
-          echo "Hello from Service Catalog WebApp" > /var/www/html/index.html
+          echo "Hello World! From EC2" > /var/www/html/index.html
 
   WebAppSG:
     Type: AWS::EC2::SecurityGroup
